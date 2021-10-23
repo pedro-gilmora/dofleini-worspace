@@ -1,9 +1,5 @@
 <template lang="pug">
-a-form(
-  ref="ruleForm"
-  :model="form"
-  :rules="rules"
-).p-4
+form(ref="form").p-4
   a-row(type="flex" justify="center" align="top" :gutter="[24,24]")
 
     a-col(:span="20" :lg={span: 12})
@@ -29,10 +25,12 @@ a-form(
       br
 
       b Nombre del espacio
-      a-input.mt-2(size="large" v-model="workSpace.name" placeholder="Ep: Mi espacio de trabajo")
-      .py-2 
+      a-form-item.mt-2
+        a-input(size="large" v-model="workSpace.name" v-validate.required placeholder="Ep: Mi espacio de trabajo")
+     
       b URL del espacio (dirección web)
-      a-input.mt-2(size="large" v-model="workSpace.domain" placeholder="Ep: mi.dominio" type="url" suffix=".plankton.com")
+      a-form-item.mt-2
+        a-input(size="large" v-model="workSpace.domain" suffix=".plakton.com" v-validate.required="invalidDomain" placeholder="Ep: mi.dominio")
     
       a-space.py-4(align="start")
         a-icon(type="info-circle")
@@ -87,11 +85,14 @@ a-form(
                 div {{privacy.state}}
                   br
                   .desc {{privacy.desc}}
+      //- Buttons           
       a-space.mt-8
         a-button(
           size="large"
           type="primary"
+          @click="submit"
         ) Guardar cambios
+
         a-button(
           size="large"
         ) Descartar
@@ -99,45 +100,52 @@ a-form(
     a-col(:span="24" :lg={span: 12})
       preview(:domain="workSpace.domain" :title="workSpace.name" :color="workSpace.color")
 </template>
+
 <style lang="sass">
 .workspace-privacy-btn
   text-align: left
   height: auto
   white-space: break-spaces
+
   .desc
     opacity: .65
+
 .ant-btn:active
     color: #096dd9
+
 .color-button
   border: none
   &.active::after
-    border: 4px solid white
-    /* box-sizing: content-box; */
-    content: ''
+    border: 5px solid white
+    content: ""
     position: absolute
-    width: 32px
-    height: 32px
-    padding: 12px
-    transform: translate(4px,4px) !important
+    width: 34px
+    height: 34px
+    transform: translate(3px, 3px) !important
     left: 0 !important
     top: 0 !important
     transition: none
     animation: none
     border-radius: 99px
     opacity: 1
+    
 .logo
   width: 64px
   height: 64px
   border-radius: 64px
   background-size: cover
 </style>
+
+
 <script lang="ts">
-import { Component, Provide, Vue } from "vue-property-decorator";
-import { usePersistent } from "./utils";
+import { Component, Provide, Ref, Vue } from "vue-property-decorator";
+import { usePersistent } from "@/assets/utils";
 import Preview from '@/work-space.preview.vue';
+import validate from '@/assets/utils/directives/validate'
 
 @Component<App>({
   components: {Preview},
+  directives: {validate},
   mixins: [
     usePersistent({
       workSpace: {
@@ -151,6 +159,15 @@ import Preview from '@/work-space.preview.vue';
   })]
 })
 export default class App extends Vue {
+
+  @Ref('form')
+  form!: HTMLFormElement & {validate(): Promise<boolean>};
+
+  rules = {
+    name: [
+      { required: true, message: 'Name is mandatory', trigger: 'blur' }
+    ]
+  };
 
   privacy = [
     {
@@ -182,6 +199,10 @@ export default class App extends Vue {
   @Provide()
   workSpace!: any
 
+  invalidDomain(str: string){
+    return /^[\w\d-\.]*(?<!\.)$/.test(str) || 'Invalid domain format'
+  }
+
   getCapitals(k: string){
     return ((k?.split(/\s+/)?.map(el => el?.[0]?.toUpperCase() ?? '').slice(0,2).join('')) || '?').trim();
   }
@@ -198,6 +219,12 @@ export default class App extends Vue {
 
   getLogo(url: string){
     return localStorage[`img:${url}`]
+  }
+
+  async submit(){
+    if(await this.form.validate()){
+      console.log(this.workSpace)
+    }
   }
 }
 </script>
