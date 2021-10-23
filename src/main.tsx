@@ -2,7 +2,7 @@ import Vue from 'vue';
 import Antd from 'ant-design-vue';
 import 'ant-design-vue/dist/antd.css';
 import 'typeface-fira-sans'
-import App from '@/App.vue';
+import App from '@/app.vue';
 import '@/assets/global.sass';
 Vue.config.productionTip = false;
 
