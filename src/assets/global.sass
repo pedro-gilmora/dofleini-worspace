@@ -1,0 +1,49 @@
+*
+    font-family: Fira Sans
+
+@for $i from 1 through 12
+    .p-#{$i}
+        padding: #{$i * 4}px
+        
+    .m-#{$i}
+        margin: #{$i * 4}px
+
+    .nm-#{$i}
+        margin: -#{$i * 4}px
+
+    .py-#{$i}
+        padding-top: #{$i * 4}px
+        padding-bottom: #{$i * 4}px
+
+    .px-#{$i}
+        padding-left: #{$i * 4}px
+        padding-right: #{$i * 4}px
+        
+    .my-#{$i}
+        margin-top: #{$i * 4}px
+        margin-bottom: #{$i * 4}px
+        
+    .mx-#{$i}
+        margin-left: #{$i * 4}px
+        margin-right: #{$i * 4}px
+        
+    .nmy-#{$i}
+        margin-top: -#{$i * 4}px 0
+        margin-bottom: -#{$i * 4}px 0
+        
+    .nmx-#{$i}
+        margin-left: -#{$i * 4}px
+        margin-right: -#{$i * 4}px
+
+    @each $short, $long in ('l': 'left', 'r': 'right', 't': 'top', 'b': 'bottom')
+        .p#{$short}-#{$i}
+            padding-#{$long}: #{$i * 4}px
+            
+        .m#{$short}-#{$i}
+            margin-#{$long}: #{$i * 4}px
+
+        .nm#{$short}-#{$i}
+            margin-#{$long}: -#{$i * 4}px
+
+
+     
