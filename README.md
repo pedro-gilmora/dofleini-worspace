@@ -10,6 +10,3 @@ Open workfolder in a Command Line or PowerShell and type:
 then  
 `pnpm dev`
 
-## Preview
-https://user-images.githubusercontent.com/33942331/138569495-37d38dcf-1520-45be-ac76-7f0d27173540.mp4
-
