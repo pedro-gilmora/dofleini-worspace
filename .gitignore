@@ -1,0 +1,11 @@
+.vs/
+bin/
+obj/
+dist/
+node_modules/
+.idea/
+/yarn.lock
+/yarn-error.log
+/.git/
+.pnpm-debug.log
+pnpm-lock.yaml
