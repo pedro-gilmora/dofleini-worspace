@@ -2,6 +2,10 @@ import config from "vite.config"
 import Vue, { ComputedOptions, VueConstructor } from "vue"
 
 
+export function sleep(ms: number){
+  return new Promise(a => setTimeout(a, ms))
+}
+
 export const useSession = <T>(values: T) => {
 
   return (Vue as VueConstructor<Vue & T>).extend({

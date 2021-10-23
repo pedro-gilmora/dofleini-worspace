@@ -45,5 +45,18 @@
         .nm#{$short}-#{$i}
             margin-#{$long}: -#{$i * 4}px
 
-
-     
+.has-errors 
+    .ant-input
+        border-color: red
+        box-shadow: 0 0 0 2px rgb(255 45 45 / 32%)
+    //TODO: Fix this without immplement this rule
+    .ant-input-suffix
+        top: 20px
+    .validation-error
+        line-height: 1.5rem
+        opacity: 1
+        color: red
+        transition: margin-top 200ms, opacity 100ms
+        &.hide
+            margin-top: -16px
+            opacity: 0
