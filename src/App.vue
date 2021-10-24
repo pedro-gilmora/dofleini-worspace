@@ -7,9 +7,7 @@ form(ref="form").p-4
       h3 Logo del espacio
       a-space
         div.logo(
-          v-if="workSpace.logoUrl" 
-          width="64" 
-          height="64" 
+          v-if="workSpace.logoUrl"
           :style="`background-image: url(${getLogo(workSpace.logoUrl)});`"
         )
         a-avatar(v-else :size="64" style="background: #343c4a; font-size: 32px") 
@@ -26,7 +24,7 @@ form(ref="form").p-4
 
       b Nombre del espacio
       a-form-item.mt-2
-        a-input(size="large" v-model="workSpace.name" v-validate.required placeholder="Ep: Mi espacio de trabajo")
+        a-input(size="large" placeholder="Ep: Mi espacio de trabajo" v-model="workSpace.name" v-validate.required)
      
       b URL del espacio (dirección web)
       a-form-item.mt-2
@@ -134,6 +132,7 @@ form(ref="form").p-4
   height: 64px
   border-radius: 64px
   background-size: cover
+  background-position: center
 </style>
 
 
