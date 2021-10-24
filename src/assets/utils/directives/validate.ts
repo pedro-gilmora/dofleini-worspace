@@ -1,4 +1,4 @@
-import { DirectiveOptions } from "vue";
+import Vue, { DirectiveOptions } from "vue";
 import { sleep } from "..";
 
 // noinspection JSUnusedGlobalSymbols
@@ -19,7 +19,7 @@ export type Validator = ValidatorResult |  ((v: any) => ValidatorResult | Promis
 // noinspection JSUnusedGlobalSymbols
 export default {
 
-  async inserted(_el, { value, modifiers }, { /*context,*/ componentInstance }) {
+  async inserted(_el, { value, def, modifiers }, { /*context,*/ componentInstance }) {
 
     const input = ((componentInstance?.$refs?.input) ?? _el) as HTMLInputElement, 
       messages: HTMLElement = getMessagesSlot(input),
@@ -32,7 +32,7 @@ export default {
         'INPUT-DATE': 'valueAsDate'
       }[(input.tagName + '-' + (input as any).type).toUpperCase()] ?? 'value';
     
-    if(!(input instanceof HTMLInputElement)) return
+    if(!(input instanceof HTMLInputElement)) return;
     
     if (form && !(form as any).validate)
       (form as any).validate = async () => {

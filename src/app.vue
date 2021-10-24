@@ -28,7 +28,7 @@ form(ref="form").p-4
      
       b URL del espacio (dirección web)
       a-form-item.mt-2
-        a-input(size="large" v-model="workSpace.domain" suffix=".plakton.com" v-validate.required="invalidDomain" placeholder="Ep: mi.dominio")
+        a-input(size="large" v-model="workSpace.domain" suffix=".plakton.com" v-validate.required="workSpace.name ? invalidDomain : undefined" placeholder="Ep: mi.dominio")
     
       a-space.py-4(align="start")
         a-icon(type="info-circle")
@@ -56,15 +56,7 @@ form(ref="form").p-4
       
       b Color del tema
       br      
-      a-row(type="flex" justify="start" align="top" :gutter="[12,12]")
-        a-col.mt-2(:span="2" v-for="(color, colorIndex) of colors" :key="color")
-          a-button.color-button(
-            size="large"
-            :class="{ active: workSpace.color === color }"
-            shape="round"
-            :style="`background-color: ${color};`"
-            @click="workSpace.color = color"
-          )
+      color-picker(:colors="colors" v-model="workSpace.color")
       br
 
       
@@ -106,7 +98,7 @@ form(ref="form").p-4
   white-space: break-spaces
 
   .desc
-    opacity: .65
+    opacity: .7
 
 .ant-btn:active
     color: #096dd9
@@ -136,14 +128,15 @@ form(ref="form").p-4
 </style>
 
 
-<script lang="ts">
+<script lang="tsx">
 import { Component, Provide, Ref, Vue } from "vue-property-decorator";
-import { usePersistent } from "@/assets/utils";
+import {sleep, usePersistent} from "@/assets/utils";
 import Preview from '@/work-space.preview.vue';
 import validate, {ValidatableForm} from '@/assets/utils/directives/validate'
+import ColorPicker from "@/color-picker.vue";
 
 @Component<App>({
-  components: {Preview},
+  components: {ColorPicker, Preview},
   directives: {validate},
   mixins: [
     usePersistent({
@@ -161,6 +154,8 @@ export default class App extends Vue {
 
   @Ref('form')
   form!: ValidatableForm;
+  
+  saving = false;
 
   rules = {
     name: [
@@ -192,7 +187,7 @@ export default class App extends Vue {
     "#E55C00",
     "#D6198A",
     "#B321F1",
-    "#48B5FE",
+    "#2098e2",
   ];
 
   @Provide()
@@ -221,8 +216,12 @@ export default class App extends Vue {
   }
 
   async submit(){
-    if(await this.form.validate()){
-      console.log(this.workSpace)
+    if(!this.saving && await this.form.validate()){
+      this.saving = true
+      let $ = this as any;
+      await $.$message.loading('Creando espacio de trabajo...', 3);
+      await $.$message.success(() => <span>Espacio de trabajo <b>{this.workSpace.name}</b> creado exitosamente</span>, 5);      
+      this.saving = false;
     }
   }
 }
