@@ -72,36 +72,52 @@ export default {
       if(hasErrors && input.parentElement?.classList?.contains('has-errors') === false)
         input.parentElement.classList.add('has-errors');
 
-      else if(!hasErrors && input.parentElement?.classList?.contains('has-errors') === true)
-        input.parentElement.classList.remove('has-errors');
-
       const result = [...validationMap.values()];
       messages.innerHTML = result.map(({lastValue, value}) => {
-        let toggle = '';
+        let toggle = '', style = '';
         if(lastValue !== value){
-          if(typeof lastValue === 'string')
-            toggle += ' to-hide'
-          if(typeof lastValue !== 'string')
-            toggle += ' show'
+          if(typeof lastValue === 'string') {
+            toggle += ' to-hide';
+          }
+          if(typeof lastValue !== 'string') {
+            toggle += ' to-show';
+            style += 'transform: translateY(-14px); opacity: 1;';
+          }
         }
-        return `<div class="validation-error${toggle}">${value === true ? '' : value}</div>`
+        return `<div class="validation-error${toggle}" style="${style}">
+                    ${typeof value !== "string" ? (typeof lastValue !== "string" ? '' : lastValue) : value}
+                </div>`
       }).join('');
 
-      const errors = [...messages.querySelectorAll('.validation-error') as NodeListOf<HTMLDivElement>];    
+      const errors = [...messages.querySelectorAll('.validation-error') as NodeListOf<HTMLDivElement>],
+        strErrors = result
+          .filter(({ value }) => value !== true)
+          .map(({ value }) =>  value? '' : value).join(', ');
 
       for(let div of errors){
-        await sleep(100)
-        if(div.classList.contains('show'))
-          div.classList.remove('show')
-        if(div.classList.contains('hide')){
-          div.remove()
+        if(div.classList.contains('to-show')) {
+          const anim = div.animate({
+            transform: 'translateY(0)',
+            opacity: 1
+          }, {duration: 100});
+          anim.onfinish = _ => {
+            div.style = undefined
+            div.classList.remove('to-show')
+          };
+        }
+        if(div.classList.contains('to-hide')){
+          const anim = div.animate({
+            transform: 'translateY(-14px)',
+            opacity: 0
+          }, {duration: 100});
+          anim.onfinish = _ => {
+            div.remove();
+            if(strErrors === '' && input.parentElement?.classList?.contains('has-errors') === true)
+              input.parentElement.classList.remove('has-errors');
+          }
         }
       }
-
-      const strErrors = result
-        .filter(({ value }) => value !== true)
-        .map(({ value }) =>  value? '' : value).join(', ');
-      console.log(input, strErrors)
+      // console.log(input, strErrors)
 
       input.setCustomValidity(strErrors);
       return input.checkValidity()
