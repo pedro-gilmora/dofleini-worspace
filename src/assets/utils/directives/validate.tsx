@@ -1,42 +1,37 @@
 import { DirectiveOptions } from "vue";
 import { sleep } from "..";
 
+// noinspection JSUnusedGlobalSymbols
 const validators = {
   required: (v: string) => !!v?.trim() || 'Required',
   requiredDate: (v: Date | null) => !['Invalid Date',''].includes(v?.toString()??'') || 'Required',
   requiredNumber: (v: number | null) => ![NaN, 0 , null].includes(v) || 'Required',
   email: (v: string) => /[\w\-+.]{3,}@[\w\-+]{2,}(?:\.[\w\-+]{1,})+$/.test(v) || 'Invalid email format',
-  phone: (v: string) => /^\+?(?:\d+[-\d]*){4,}(\s*ext[\:\.]\s*\d+?(-\d+)?)?$/.test(v) || 'Invalid phone number format'
+  phone: (v: string) => /^\+?(?:\d+[-\d]*){4,}(\s*ext[:.]\s*\d+?(-\d+)?)?$/.test(v) || 'Invalid phone number format'
 }
 type ValidatorResult = string | true | Promise<ValidatorResult>;
 type ValidationCache = {value: ValidatorResult, lastValue: ValidatorResult};
 
 export type ValidatableForm = HTMLFormElement & {validate(): Promise<boolean>}
 
-export type Validator = (v: any) => (ValidatorResult | Promise<ValidatorResult>) | (ValidatorResult);
+export type Validator = ValidatorResult |  ((v: any) => ValidatorResult | Promise<ValidatorResult>);
 
-function addValidationResult(map: Map<Validator, ValidatorResult>, validator: Validator, res: ValidatorResult){
-  if(map.get(validator) === res) return;
-  map.set(validator, res);
-}
-
+// noinspection JSUnusedGlobalSymbols
 export default {
 
-  async inserted(_el, { value, modifiers }, { context, componentInstance }) {
+  async inserted(_el, { value, modifiers }, { /*context,*/ componentInstance }) {
 
     const input = ((componentInstance?.$refs?.input) ?? _el) as HTMLInputElement, 
       messages: HTMLElement = getMessagesSlot(input),
       form = input.form,
-      $nextTick = componentInstance?.$nextTick ?? context!.$nextTick,
+      // $nextTick = componentInstance?.$nextTick ?? context!.$nextTick,
       val = value as Validator | Validator[],
       prop = {
         'INPUT-CHECKBOX': 'checked',
         'INPUT-NUMBER': 'valueAsNumber',
         'INPUT-DATE': 'valueAsDate'
       }[(input.tagName + '-' + (input as any).type).toUpperCase()] ?? 'value';
-
-    let def = arguments[1].def
-
+    
     if(!(input instanceof HTMLInputElement)) return
     
     if (form && !(form as any).validate)
@@ -47,17 +42,15 @@ export default {
         return true
       }
 
-    let lastValue = input[prop],
-      validationMap = new Map<Validator, ValidationCache>();
+    const validationMap = new Map<Validator, ValidationCache>();
       
     const validate = async () => {
       // debugger
       const elVal = input[prop];
 
-      let res: ValidatorResult = true,
-        hasErrors = false;
+      let hasErrors = false;
       
-      for (var item of Object.keys(modifiers).filter(key => key in validators).map(key => validators[key])) {
+      for (let item of Object.keys(modifiers).filter(key => key in validators).map(key => validators[key])) {
         if (typeof item === 'function') {
           hasErrors = typeof(await registerValidation(item, elVal)) === 'string' || hasErrors;
         }
