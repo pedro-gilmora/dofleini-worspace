@@ -85,14 +85,11 @@ export default {
           }
         }
         return `<div class="validation-error${toggle}" style="${style}">
-                    ${typeof value !== "string" ? (typeof lastValue !== "string" ? '' : lastValue) : value}
-                </div>`
+            ${typeof value !== "string" ? (typeof lastValue !== "string" ? '' : lastValue) : value}
+        </div>`
       }).join('');
 
-      const errors = [...messages.querySelectorAll('.validation-error') as NodeListOf<HTMLDivElement>],
-        strErrors = result
-          .filter(({ value }) => value !== true)
-          .map(({ value }) =>  value? '' : value).join(', ');
+      const errors = [...messages.querySelectorAll('.validation-error') as NodeListOf<HTMLDivElement>];
 
       for(let div of errors){
         if(div.classList.contains('to-show')) {
@@ -121,7 +118,7 @@ export default {
       }
       // console.log(input, strErrors)
 
-      input.setCustomValidity(strErrors);
+      input.setCustomValidity(messages.innerText);
       return input.checkValidity()
     };
     
