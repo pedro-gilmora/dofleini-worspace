@@ -216,12 +216,16 @@ export default class App extends Vue {
   }
 
   async submit(){
-    if(!this.saving && await this.form.validate()){
-      this.saving = true
-      let $ = this as any;
-      await $.$message.loading('Creando espacio de trabajo...', 3);
-      await $.$message.success(() => <span>Espacio de trabajo <b>{this.workSpace.name}</b> creado exitosamente</span>, 5);      
-      this.saving = false;
+    if(!this.saving){
+      const $ = this as any;
+      if(await this.form.validate()) {
+        this.saving = true
+        await $.$message.loading('Creando espacio de trabajo...', 3);
+        await $.$message.success(() => <span>Espacio de trabajo <b>{this.workSpace.name}</b> creado exitosamente</span>, 5);
+        this.saving = false;
+      }
+      else
+        await $.$message.error(() => <span>La configuración contiene errores</span>, 5);
     }
   }
 }
