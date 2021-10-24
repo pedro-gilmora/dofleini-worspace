@@ -199,7 +199,7 @@ export default class App extends Vue {
   workSpace!: any
 
   invalidDomain(str: string){
-    return /^[\w\d-\.]*(?<!\.)$/.test(str) || 'Invalid domain format'
+    return /^(?!\.)[\w\d-.]*(?<!\.)$/.test(str) || 'Invalid domain format'
   }
 
   getCapitals(k: string){
