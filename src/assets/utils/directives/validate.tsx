@@ -24,7 +24,7 @@ export default {
     const input = ((componentInstance?.$refs?.input) ?? _el) as HTMLInputElement, 
       messages: HTMLElement = getMessagesSlot(input),
       form = input.form,
-      // $nextTick = componentInstance?.$nextTick ?? context!.$nextTick,
+      $nextTick = componentInstance?.$nextTick ?? context!.$nextTick,
       val = value as Validator | Validator[],
       prop = {
         'INPUT-CHECKBOX': 'checked',
@@ -107,12 +107,14 @@ export default {
         }
         if(div.classList.contains('to-hide')){
           const anim = div.animate({
-            transform: 'translateY(-14px)',
+            transform: 'translateY(-1em)',
             opacity: 0
           }, {duration: 100});
-          anim.onfinish = _ => {
+          anim.onfinish = async _ => {
+            console.log(errors, result)
             div.remove();
-            if(strErrors === '' && input.parentElement?.classList?.contains('has-errors') === true)
+            await $nextTick();
+            if(!messages.innerText && input.parentElement?.classList?.contains('has-errors') === true)
               input.parentElement.classList.remove('has-errors');
           }
         }
