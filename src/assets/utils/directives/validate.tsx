@@ -8,13 +8,22 @@ const validators = {
   email: (v: string) => /[\w\-+.]{3,}@[\w\-+]{2,}(?:\.[\w\-+]{1,})+$/.test(v) || 'Invalid email format',
   phone: (v: string) => /^\+?(?:\d+[-\d]*){4,}(\s*ext[\:\.]\s*\d+?(-\d+)?)?$/.test(v) || 'Invalid phone number format'
 }
-type ValidatorResult = string | true;
+type ValidatorResult = string | true | Promise<ValidatorResult>;
+type ValidationCache = {value: ValidatorResult, lastValue: ValidatorResult};
+
+export type ValidatableForm = HTMLFormElement & {validate(): Promise<boolean>}
 
 export type Validator = (v: any) => (ValidatorResult | Promise<ValidatorResult>) | (ValidatorResult);
+
+function addValidationResult(map: Map<Validator, ValidatorResult>, validator: Validator, res: ValidatorResult){
+  if(map.get(validator) === res) return;
+  map.set(validator, res);
+}
 
 export default {
 
   async inserted(_el, { value, modifiers }, { context, componentInstance }) {
+
     const input = ((componentInstance?.$refs?.input) ?? _el) as HTMLInputElement, 
       messages: HTMLElement = getMessagesSlot(input),
       form = input.form,
@@ -29,10 +38,7 @@ export default {
     let def = arguments[1].def
 
     if(!(input instanceof HTMLInputElement)) return
-
-    //TODO: Form validation hooks
-    //TODO: Input styles
-    //TODO: Change form validation state
+    
     if (form && !(form as any).validate)
       (form as any).validate = async () => {
         for(const el of form.elements)
@@ -41,73 +47,70 @@ export default {
         return true
       }
 
-    let lastValue = input[prop];
+    let lastValue = input[prop],
+      validationMap = new Map<Validator, ValidationCache>();
+      
     const validate = async () => {
       // debugger
       const elVal = input[prop];
 
-      if(elVal === lastValue && messages.innerHTML) return;
-      let res: ValidatorResult | Promise<ValidatorResult> = true,
-        innerHtml = messages.innerHTML;
-
-      if(messages.innerHTML){
-        for(const mssage of [...messages.querySelectorAll('.validation-error')]){
-          mssage.classList.add('hide')
-          await sleep(200);
-          mssage.remove()
-        }
-      }
-
-      innerHtml = messages.innerHTML = '';
-        
-      input.setCustomValidity('');
+      let res: ValidatorResult = true,
+        hasErrors = false;
       
       for (var item of Object.keys(modifiers).filter(key => key in validators).map(key => validators[key])) {
         if (typeof item === 'function') {
-          if ((typeof (res = item(elVal)) === 'string') || (res instanceof Promise && typeof (res = await res) == 'string'))
-            innerHtml += `<div class="validation-error hide">${res}</div>`;
-          else if (typeof (res) == 'string')
-            innerHtml += `<div class="validation-error hide">${res}</div>`;
+          hasErrors = typeof(await registerValidation(item, elVal)) === 'string' || hasErrors;
         }
       }
       if (val instanceof Array) {
-        for (var item of val) {
-          if (typeof item === 'function') {
-            if ((typeof (res = item(elVal)) === 'string') || (res instanceof Promise && typeof (res = await res) == 'string'))
-              innerHtml += `<div class="validation-error hide">${res}</div>`;
-            else if (typeof (res) == 'string')
-              innerHtml += `<div class="validation-error hide">${res}</div>`;
-          }
+        for (var [i, item] of val.map((v, i) => [v, i])) {
+          if (typeof item === 'function') 
+            hasErrors = typeof(await registerValidation(item, elVal)) === 'string' || hasErrors;
+          else
+            hasErrors = typeof(await registerValidation(`val[${i}]`, elVal)) === 'string' || hasErrors;
         }
       }
       else if (typeof val === 'function') {
-        let res: ValidatorResult | Promise<ValidatorResult> = true
-        if ((typeof (res = val(elVal)) === 'string') || (res instanceof Promise && typeof (res = await res) == 'string'))
-          innerHtml += `<div class="validation-error hide">${res}</div>`;
-        else if (typeof (res) == 'string')
-          innerHtml += `<div class="validation-error hide">${res}</div>`;
+        hasErrors = typeof(await registerValidation(val, elVal)) === 'string' || hasErrors;
       }
       else if (typeof (val) == 'string')
-        innerHtml += `<div class="validation-error hide">${res}</div>`;
+        hasErrors = typeof(await registerValidation(`val`, elVal)) === 'string' || hasErrors;
 
-      if(innerHtml && input.parentElement?.classList?.contains('has-errors') === false)
+      if(hasErrors && input.parentElement?.classList?.contains('has-errors') === false)
         input.parentElement.classList.add('has-errors');
 
-      else if(!innerHtml && input.parentElement?.classList?.contains('has-errors') === true)
+      else if(!hasErrors && input.parentElement?.classList?.contains('has-errors') === true)
         input.parentElement.classList.remove('has-errors');
 
-      messages.innerHTML += innerHtml;
+      const result = [...validationMap.values()];
+      messages.innerHTML = result.map(({lastValue, value}) => {
+        let toggle = '';
+        if(lastValue !== value){
+          if(typeof lastValue === 'string')
+            toggle += ' to-hide'
+          if(typeof lastValue !== 'string')
+            toggle += ' show'
+        }
+        return `<div class="validation-error${toggle}">${value === true ? '' : value}</div>`
+      }).join('');
 
-      messages.querySelectorAll('.validation-error').forEach(async el =>{
-        await $nextTick();
-        el.classList.remove('hide')
-      });
+      const errors = [...messages.querySelectorAll('.validation-error') as NodeListOf<HTMLDivElement>];    
 
-      input.setCustomValidity(
-        [...messages.querySelectorAll('.validation-error') as NodeListOf<HTMLDivElement>]
-          .map(e => e.innerText)
-          .join(', ')
-      );
+      for(let div of errors){
+        await sleep(100)
+        if(div.classList.contains('show'))
+          div.classList.remove('show')
+        if(div.classList.contains('hide')){
+          div.remove()
+        }
+      }
+
+      const strErrors = result
+        .filter(({ value }) => value !== true)
+        .map(({ value }) =>  value? '' : value).join(', ');
+      console.log(input, strErrors)
+
+      input.setCustomValidity(strErrors);
       return input.checkValidity()
     };
     
@@ -115,12 +118,17 @@ export default {
 
     input.onblur = async () => {
       await validate()
-      const validationMessage = `<div class="validation-error">${input.validationMessage}</div>`
-      if(!input.validity.customError && !messages.innerHTML && input.validationMessage && !messages.innerHTML.includes(validationMessage))
-        messages.innerHTML += validationMessage;
     }
     if(!modifiers.lazy)
-      input.oninput = input.onblur as any
+      input.oninput = validate as any
+
+    async function registerValidation(item: Function | string | boolean, elVal: any) {
+      let res: ValidatorResult | Promise<ValidatorResult> = typeof item === 'function' ? item(elVal) : item;
+      if ((res as any) instanceof Promise)
+        res = await res;
+      validationMap.set(item, { value: res, lastValue: validationMap.get(item)?.value });
+      return res
+    }
   }
 } as DirectiveOptions
 

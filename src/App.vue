@@ -141,7 +141,7 @@ form(ref="form").p-4
 import { Component, Provide, Ref, Vue } from "vue-property-decorator";
 import { usePersistent } from "@/assets/utils";
 import Preview from '@/work-space.preview.vue';
-import validate from '@/assets/utils/directives/validate'
+import validate, {ValidatableForm} from '@/assets/utils/directives/validate'
 
 @Component<App>({
   components: {Preview},
@@ -161,7 +161,7 @@ import validate from '@/assets/utils/directives/validate'
 export default class App extends Vue {
 
   @Ref('form')
-  form!: HTMLFormElement & {validate(): Promise<boolean>};
+  form!: ValidatableForm;
 
   rules = {
     name: [
