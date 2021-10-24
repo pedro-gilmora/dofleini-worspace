@@ -331,7 +331,7 @@ svg.nml-12(
       text.w(transform="translate(3888.538 705.215)")
         tspan(x="0", y="0") //{{ domain || '&lt;domain&gt;' }}.plankton.com/proyectos/plan_de_ventas
       text.w(transform="translate(3742.538 673.215)")
-        tspan(x="0", y="0") Plankton - {{ title?.length > 9 ? title.slice(0,9) + '...' : (title || '&lt;Name&gt;') }}
+        tspan(x="0", y="0") Plankton - {{ title?.length > 11 ? title.slice(0,10) + '...' : (title || '&lt;Name&gt;') }}
       rect.x(width="1", height="16", transform="translate(3843 692)")
       circle.u(cx="10", cy="10", r="10", transform="translate(3716 658)")
       g(transform="translate(3719.776 661.963)")
