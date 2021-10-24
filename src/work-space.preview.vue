@@ -605,7 +605,9 @@ svg {
   clip-path: url(#o);
 }
 .z {
-  fill: #ebf7ff;
+  fill: var(--color, gray);
+  transition: fill .5s;
+  opacity: .2;
 }
 .ab {
   fill: #ffc60a;
