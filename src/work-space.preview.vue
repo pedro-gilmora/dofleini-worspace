@@ -590,11 +590,9 @@ svg {
   font-size: 14px;
 }
 .v {
-  font-family: OpenSans-SemiBold, Open Sans;
   font-weight: 600;
 }
 .w {
-  font-family: OpenSans-Regular, Open Sans;
 }
 .x {
   fill: #2b2b2b;
@@ -647,11 +645,5 @@ export default class WorspacePreview extends Vue {
 
   @Prop()
   color!: string;
-
-  mounted(){
-    console.log(this)
-  }
-
-
 }
 </script>
