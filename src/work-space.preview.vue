@@ -330,8 +330,6 @@ svg.nml-12(
         tspan(x="0", y="0") https:
       text.w(transform="translate(3888.538 705.215)")
         tspan(x="0", y="0") //{{ domain || '&lt;domain&gt;' }}.plankton.com/proyectos/plan_de_ventas
-      text.w(transform="translate(3742.538 673.215)")
-        tspan(x="0", y="0") Plankton - {{ title?.length > 11 ? title.slice(0,10) + '...' : (title || '&lt;Name&gt;') }}
       rect.x(width="1", height="16", transform="translate(3843 692)")
       circle.u(cx="10", cy="10", r="10", transform="translate(3716 658)")
       g(transform="translate(3719.776 661.963)")
@@ -490,6 +488,11 @@ svg.nml-12(
           d="M11.463,4.732H10.93V3.665a2.665,2.665,0,1,0-5.331,0V4.732H5.066A1.069,1.069,0,0,0,4,5.8v5.331a1.069,1.069,0,0,0,1.066,1.066h6.4a1.069,1.069,0,0,0,1.066-1.066V5.8A1.069,1.069,0,0,0,11.463,4.732Zm-3.2,4.8A1.066,1.066,0,1,1,9.331,8.463,1.069,1.069,0,0,1,8.265,9.529Zm1.653-4.8H6.612V3.665a1.653,1.653,0,1,1,3.305,0Z",
           transform="translate(-1.868 -0.467)"
         )
+
+  foreignObject(x=268 y=94 height="1.25rem" width="130")
+    body(xmlns="http://www.w3.org/1999/xhtml")
+      div(style=" width: 130px;white-space: nowrap;margin: 0;max-height: 1.5rem;text-overflow: ellipsis;overflow: hidden;")
+        | {{title}}
 </template>
 <style scoped>
 svg {
